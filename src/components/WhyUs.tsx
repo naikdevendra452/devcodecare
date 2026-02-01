@@ -16,33 +16,40 @@ interface CounterStat {
 
 const cards: Card[] = [
   {
-    icon: 'bi-calendar4-week',
-    title: 'Corporis dolorem',
+    icon: 'bi-laptop',
+    title: 'Web Development',
     description:
-      'Deleniti optio et nisi dolorem debitis. Aliquam nobis est temporibus sunt ab inventore officiis aut voluptatibus.',
+      'Building fast, accessible, and SEO-friendly websites using modern frameworks and best practices to grow your online presence.',
     delay: 100,
   },
   {
-    icon: 'bi-camera-reels',
-    title: 'Voluptates dolores',
+    icon: 'bi-phone',
+    title: 'Mobile App Development',
     description:
-      'Voluptates nihil et quis omnis et eaque omnis sint aut. Ducimus dolorum aspernatur.',
+      'Native and cross-platform mobile apps focused on performance, great UX, and seamless integration with your backend systems.',
     delay: 200,
   },
   {
-    icon: 'bi-chat-square-text',
-    title: 'Eum ut aspernatur',
+    icon: 'bi-headset',
+    title: 'Technical Support',
     description:
-      'Autem quod nesciunt eos ea aut amet laboriosam ab. Eos quis porro in non nemo ex.',
+      'Reliable 24/7 technical and customer support to keep your services running and your users happy.',
     delay: 300,
+  },
+  {
+    icon: 'bi-cloud',
+    title: 'Cloud & DevOps',
+    description:
+      'Scalable cloud architectures, CI/CD pipelines, and infrastructure automation to reduce costs and improve reliability.',
+    delay: 400,
   },
 ];
 
 const counterStats: CounterStat[] = [
-  { value: 232, label: 'Clients' },
-  { value: 421, label: 'Projects' },
-  { value: 1364, label: 'Hours Of Support' },
-  { value: 42, label: 'Hard Workers' },
+  { value: 320, label: 'Clients' },
+  { value: 540, label: 'Projects' },
+  { value: 15600, label: 'Hours Of Support' },
+  { value: 55, label: 'Team Members' },
 ];
 
 export default function WhyUs() {
@@ -100,14 +107,14 @@ export default function WhyUs() {
         <header className="section-header">
           <h3>Why choose us?</h3>
           <p>
-            Laudem latine persequeris id sed, ex fabulas delectus quo. No vel partiendo
-            abhorreant vituperatoribus.
+            We deliver end-to-end digital solutions — web & mobile development,
+            dependable technical support, and scalable cloud architectures.
           </p>
         </header>
 
         <div className="row row-eq-height justify-content-center">
           {cards.map((card) => (
-            <div key={card.title} className="col-lg-4 mb-4">
+            <div key={card.title} className="col-lg-3 mb-4">
               <div className="card" data-aos="zoom-in" data-aos-delay={card.delay}>
                 <i className={`bi ${card.icon}`}></i>
                 <div className="card-body">

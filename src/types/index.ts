@@ -3,6 +3,8 @@ export interface ContactFormData {
   name: string;
   email: string;
   subject: string;
+  service?: string;
+  otherService?: string;
   message: string;
 }
 

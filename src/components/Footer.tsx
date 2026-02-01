@@ -55,15 +55,15 @@ export default function Footer() {
             <div className="col-lg-3 col-md-6 footer-contact">
               <h4>Contact Us</h4>
               <p>
-                A108 Adam Street
+                Rammurthy Nagar
                 <br />
-                New York, NY 535022
+                Banglore, 560016
                 <br />
-                United States
+                Karnataka
                 <br />
                 <strong>Phone:</strong> +1 5589 55488 55
                 <br />
-                <strong>Email:</strong> info@devcodecare.in
+                <strong>Email:</strong> devcodecare@gmail.com
                 <br />
               </p>
 

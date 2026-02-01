@@ -1,5 +1,3 @@
-export const runtime = 'edge';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { validateContactForm } from '@/lib/validation';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limit';
@@ -62,14 +60,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email
-    const emailResult = await sendContactEmail(validation.data);
-
-    if (!emailResult.success) {
+    // Send email (catch errors from the mailer and return helpful messages in dev)
+    let emailResult;
+    try {
+      emailResult = await sendContactEmail(validation.data as any);
+    } catch (err) {
+      console.error('Email send threw an error:', err);
+      const devMessage = err instanceof Error ? err.message : String(err);
       return NextResponse.json(
         {
           success: false,
-          message: emailResult.message,
+          message: process.env.NODE_ENV === 'production' ? 'Failed to send message' : `Mailer error: ${devMessage}`,
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!emailResult || !emailResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: emailResult?.message || 'Failed to send message',
         },
         { status: 500 }
       );

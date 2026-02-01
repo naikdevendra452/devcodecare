@@ -87,26 +87,118 @@
 // }
 
 
-export const runtime = 'edge';
+import nodemailer from 'nodemailer';
 
-export async function sendContactEmail({ name, email, message }: { name: string; email: string; message: string }) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "hello@example.com",
-      to: "you@example.com",
-      subject: `Contact Form: ${name}`,
-      text: message,
-    }),
-  });
+export async function sendContactEmail({ name, email, subject, message, service, otherService }: { name: string; email: string; subject: string; message: string; service?: string; otherService?: string }) {
+  const toAddress = process.env.CONTACT_EMAIL || 'devcodecare@gmail.com';
 
-  if (!response.ok) {
-    return { success: false, message: "Failed to send email" };
+  const serviceLabels: Record<string, string> = {
+    web: 'Web Development',
+    mobile: 'Mobile App Development',
+    support: 'Technical Support',
+    cloud: 'Cloud & DevOps',
+  };
+
+  const serviceLabel = service === 'other' ? `Other: ${escapeHtml(otherService || '')}` : (service ? serviceLabels[service] || escapeHtml(service) : '');
+
+  const html = `
+    <h2>New Contact Form Submission</h2>
+    <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+    <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+    ${serviceLabel ? `<p><strong>Service:</strong> ${serviceLabel}</p>` : ''}
+    <hr />
+    <div>${escapeHtml(message).replace(/\n/g, '<br/>')}</div>
+  `;
+
+  const text = `From: ${name} <${email}>\nSubject: ${subject}${serviceLabel ? '\nService: ' + serviceLabel : ''}\n\n${message}`;
+
+  // Prefer SMTP (nodemailer) when SMTP_* env vars are provided
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASSWORD;
+
+  if (smtpHost && smtpUser && smtpPass) {
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const secure = (process.env.SMTP_SECURE || '') === 'true' || port === 465;
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port,
+      secure,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || smtpUser,
+        to: toAddress,
+        subject: `Contact Form: ${subject}${serviceLabel ? ' — ' + serviceLabel : ''}`,
+        text,
+        html,
+        replyTo: email,
+      });
+
+      return { success: true, message: 'Your message has been sent. Thank you!' };
+    } catch (err) {
+      console.error('SMTP sendMail error:', err);
+      return { success: false, message: (err instanceof Error) ? err.message : 'SMTP send failed' };
+    }
   }
 
-  return { success: true, message: "Email sent successfully" };
+  // Fallback to Resend API if available
+  if (process.env.RESEND_API_KEY) {
+    const fromAddress = process.env.RESEND_FROM || `no-reply@${process.env.VERCEL_URL ?? 'devcodecare.local'}`;
+    const payload = {
+      from: fromAddress,
+      to: toAddress,
+      subject: `Contact Form: ${subject}${serviceLabel ? ' — ' + serviceLabel : ''}`,
+      reply_to: email,
+      html,
+      text: text,
+    };
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      let errText = 'Failed to send email (Resend)';
+      try {
+        const errJson = await response.json();
+        errText = errJson?.error || JSON.stringify(errJson);
+      } catch {}
+      console.error('Resend error:', response.status, await response.text());
+      return { success: false, message: errText };
+    }
+
+    return { success: true, message: 'Your message has been sent. Thank you!' };
+  }
+
+  // Development fallback: if no SMTP or Resend configured, log the email and return success
+  console.log('=== Contact Form Email (development fallback) ===');
+  console.log('To:', toAddress);
+  console.log('Reply-To:', email);
+  console.log('Subject:', `Contact Form: ${subject}`);
+  console.log('Text:', text);
+  console.log('HTML:', html);
+  console.log('==============================================');
+  return { success: true, message: 'Message logged (development mode)' };
+}
+
+// Minimal HTML escape helper
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

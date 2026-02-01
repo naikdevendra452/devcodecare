@@ -7,6 +7,8 @@ interface FormErrors {
   name?: string;
   email?: string;
   subject?: string;
+  service?: string;
+  otherService?: string;
   message?: string;
   general?: string;
 }
@@ -16,6 +18,8 @@ export default function Contact() {
     name: '',
     email: '',
     subject: '',
+    service: '',
+    otherService: '',
     message: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -36,8 +40,15 @@ export default function Contact() {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!formData.subject.trim() || formData.subject.length < 5) {
-      newErrors.subject = 'Subject must be at least 5 characters';
+    if (!formData.subject.trim() || formData.subject.length < 2) {
+      newErrors.subject = 'Please select a subject';
+    }
+
+    // If user selected 'Other' service, require otherService text
+    if ((formData.service || '').toLowerCase() === 'other') {
+      if (!formData.otherService || formData.otherService.trim().length < 2) {
+        newErrors.otherService = 'Please specify the other service';
+      }
     }
 
     if (!formData.message.trim() || formData.message.length < 10) {
@@ -52,6 +63,14 @@ export default function Contact() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleSelectChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -86,7 +105,7 @@ export default function Contact() {
         setSubmitStatus('success');
         setStatusMessage(data.message);
         // Reset form
-        setFormData({ name: '', email: '', subject: '', message: '' });
+        setFormData({ name: '', email: '', subject: '', service: '', otherService: '', message: '' });
       } else {
         setSubmitStatus('error');
         setStatusMessage(data.message);
@@ -113,7 +132,7 @@ export default function Contact() {
           <div className="col-lg-6">
             <div className="map mb-4 mb-lg-0">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15549.256475806158!2d77.67732535!3d13.0156577!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1121d646a235%3A0xbf0eec5468808a4f!2sRamamurthy%20Nagar%2C%20Bengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1769954714239!5m2!1sen!2sin"
                 style={{ border: 0, width: '100%', height: '340px' }}
                 allowFullScreen
                 loading="lazy"
@@ -127,11 +146,11 @@ export default function Contact() {
             <div className="row">
               <div className="col-md-5 info">
                 <i className="bi bi-geo-alt"></i>
-                <p>A108 Adam Street, NY 535022</p>
+                <p>Rammurthy Nagar</p>
               </div>
               <div className="col-md-4 info">
                 <i className="bi bi-envelope"></i>
-                <p>info@devcodecare.in</p>
+                <p>devcodecare@gmail.com</p>
               </div>
               <div className="col-md-3 info">
                 <i className="bi bi-phone"></i>
@@ -182,23 +201,71 @@ export default function Contact() {
                   </div>
                 </div>
                 <div className="form-group mt-3">
-                  <input
-                    type="text"
-                    className={`form-control ${errors.subject ? 'is-invalid' : ''}`}
-                    name="subject"
+                  <label className="visually-hidden" htmlFor="subject">Subject</label>
+                  <select
                     id="subject"
-                    placeholder="Subject"
+                    name="subject"
+                    className={`form-control ${errors.subject ? 'is-invalid' : ''}`}
                     value={formData.subject}
-                    onChange={handleChange}
+                    onChange={handleSelectChange}
                     required
-                    maxLength={200}
-                  />
+                  >
+                    <option value="">Select subject</option>
+                    <option value="General Inquiry">General Inquiry</option>
+                    <option value="Request a Quote">Request a Quote</option>
+                    <option value="Technical Support">Technical Support</option>
+                    <option value="Careers">Careers</option>
+                    <option value="Partnership">Partnership</option>
+                  </select>
                   {errors.subject && (
                     <div className="error-message" style={{ display: 'block' }}>
                       {errors.subject}
                     </div>
                   )}
                 </div>
+
+                <div className="form-group mt-3">
+                  <label className="visually-hidden" htmlFor="service">Service</label>
+                  <select
+                    id="service"
+                    name="service"
+                    className={`form-control ${errors.service ? 'is-invalid' : ''}`}
+                    value={(formData.service as string) || ''}
+                    onChange={handleSelectChange}
+                  >
+                    <option value="">Select service (optional)</option>
+                    <option value="web">Web Development</option>
+                    <option value="mobile">Mobile App Development</option>
+                    <option value="support">Technical Support</option>
+                    <option value="cloud">Cloud & DevOps</option>
+                    <option value="other">Other</option>
+                  </select>
+                  {errors.service && (
+                    <div className="error-message" style={{ display: 'block' }}>
+                      {errors.service}
+                    </div>
+                  )}
+                </div>
+
+                {formData.service === 'other' && (
+                  <div className="form-group mt-3">
+                    <input
+                      type="text"
+                      className={`form-control ${errors.otherService ? 'is-invalid' : ''}`}
+                      name="otherService"
+                      id="otherService"
+                      placeholder="Please specify the service"
+                      value={(formData.otherService as string) || ''}
+                      onChange={handleChange}
+                      maxLength={200}
+                    />
+                    {errors.otherService && (
+                      <div className="error-message" style={{ display: 'block' }}>
+                        {errors.otherService}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="form-group mt-3">
                   <textarea
                     className={`form-control ${errors.message ? 'is-invalid' : ''}`}

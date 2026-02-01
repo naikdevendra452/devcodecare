@@ -16,8 +16,12 @@ export const contactFormSchema = z.object({
   
   subject: z
     .string()
-    .min(5, 'Subject must be at least 5 characters')
+    .min(2, 'Subject must be at least 2 characters')
     .max(200, 'Subject must be less than 200 characters'),
+  service: z
+    .enum(['web', 'mobile', 'support', 'cloud', 'other'])
+    .optional(),
+  otherService: z.string().max(200).optional(),
   
   message: z
     .string()
@@ -46,12 +50,21 @@ export function validateContactForm(data: unknown): {
     const parsed = contactFormSchema.parse(data);
     
     // Additional sanitization
-    const sanitized: ContactFormInput = {
+    // Additional sanitization
+    const sanitized: any = {
       name: sanitizeInput(parsed.name),
       email: sanitizeInput(parsed.email),
       subject: sanitizeInput(parsed.subject),
       message: sanitizeInput(parsed.message),
     };
+
+    if (parsed.service) sanitized.service = sanitizeInput(parsed.service);
+    if (parsed.otherService) sanitized.otherService = sanitizeInput(parsed.otherService);
+
+    // If service is 'other', ensure otherService is present
+    if (parsed.service === 'other' && (!parsed.otherService || parsed.otherService.trim().length < 2)) {
+      return { success: false, errors: { otherService: 'Please specify the other service' } };
+    }
     
     return { success: true, data: sanitized };
   } catch (error) {
