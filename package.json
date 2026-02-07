@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "pages:build": "npx open-next@latest build --platform cloudflare-pages",
+    "pages:deploy": "npx wrangler deploy --assets=.open-next/worker-cloudflare",
     "start": "next start",
     "lint": "next lint"
   },
@@ -29,4 +29,5 @@
     "open-next": "^1.4.0",
     "typescript": "^5.3.3"
   }
+  
 }
