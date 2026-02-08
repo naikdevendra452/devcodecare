@@ -1,7 +1,0 @@
-{
-  "name": "devcodecare",
-  "type": "javascript",
-  "main": "server.ts",
-  "compatibility_date": "2026-02-08",
-  "pages_build_caching": true
-}
